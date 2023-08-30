@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"go-redis-streams-example/internal/app"
-	
+
 	streams "github.com/khv1one/goxstreams/pkg/goxstreams/client"
 	"github.com/khv1one/goxstreams/pkg/goxstreams/producer"
 	"github.com/redis/go-redis/v9"
@@ -17,25 +17,19 @@ import (
 func main() {
 	ctx := context.Background()
 
-	converter := app.Converter[app.Event]{}
 	streamClient := streamClientInit()
-
+	converter := app.Converter[app.Event]{}
 	producer := producer.NewProducer[app.Event](streamClient, converter)
 	go write(producer, ctx)
 
 	fmt.Printf("Producer started")
-	fmt.Scanln()
+	<-ctx.Done()
 }
 
 func streamClientInit() streams.StreamClient {
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 
-	clientParams := streams.Params{
-		Stream:   "mystream",
-		Group:    "mygroup",
-		Consumer: "consumer",
-		Batch:    50,
-	}
+	clientParams := streams.Params{Stream: "mystream"}
 
 	streamClient := streams.NewClient(redisClient, clientParams)
 

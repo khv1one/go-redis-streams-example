@@ -13,10 +13,6 @@ type Event struct {
 	Bar     int
 }
 
-func (e Event) GetRedisID() string {
-	return e.RedisID
-}
-
 type Converter[E Event] struct{}
 
 func (c Converter[E]) From(event Event) map[string]interface{} {
@@ -67,4 +63,8 @@ func (c Converter[E]) To(id string, event map[string]interface{}) (Event, error)
 	result.Bar = bar
 
 	return result, nil
+}
+
+func (c Converter[E]) GetRedisID(event Event) string {
+	return event.RedisID
 }
