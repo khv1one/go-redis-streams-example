@@ -13,7 +13,11 @@ type Event struct {
 	Bar     int
 }
 
-type Converter[E Event] struct{}
+type Converter[E any] struct{}
+
+func NewConverter[E any]() Converter[E] {
+	return Converter[E]{}
+}
 
 func (c Converter[E]) From(event Event) map[string]interface{} {
 	result := make(map[string]interface{})

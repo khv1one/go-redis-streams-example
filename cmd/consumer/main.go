@@ -2,73 +2,54 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"go-redis-streams-example/internal/app"
 
-	streams "github.com/khv1one/goxstreams/pkg/goxstreams/client"
-	"github.com/khv1one/goxstreams/pkg/goxstreams/consumer"
+	"github.com/khv1one/goxstreams"
 	"github.com/redis/go-redis/v9"
 )
 
 func main() {
 	ctx := context.Background()
-	workerCtx, _ := context.WithCancel(context.Background())
+	consumerCtx, _ := context.WithCancel(ctx)
 
-	streamClient := streamClientInit()
+	consumerInit().Run(consumerCtx)
+	fmt.Println("Consumer Started")
 
-	worker := Worker[app.Event]{Name: "foo"}
-	converter := app.Converter[app.Event]{}
-
-	consumer := consumer.NewConsumer[app.Event](streamClient, converter, worker, 3)
-	consumer.Run(workerCtx)
-
-	fmt.Printf("Redis started %s", "localhost:6379")
 	<-ctx.Done()
+	// timer1 := time.NewTimer(30 * time.Second)
+	// <-timer1.C
+	// cancel()
+	// fmt.Println("shutdown....")
+	//
+	// timer := time.NewTimer(30 * time.Second)
+	// <-timer.C
 }
 
-func streamClientInit() streams.StreamClient {
+func consumerInit() goxstreams.Consumer[app.Event] {
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 
-	streamParams := streams.Params{
-		Stream:   "mystream",
-		Group:    "mygroup",
-		Consumer: "consumer",
-		Batch:    50,
+	config := goxstreams.ConsumerConfig{
+		Stream:         "mystream",
+		Group:          "mygroup",
+		ConsumerName:   "consumer",
+		BatchSize:      100,
+		MaxConcurrency: 5000,
+		NoAck:          false,
+		MaxRetries:     3,
+		CleaneUp:       false,
+		FailReadTime:   1000 * time.Millisecond,
+		FailIdle:       5000 * time.Millisecond,
 	}
 
-	streamClient := streams.NewClient(redisClient, streamParams)
+	myConsumer := goxstreams.NewConsumer[app.Event](
+		redisClient,
+		app.NewConverter[app.Event](),
+		app.NewWorker[app.Event]("foo"),
+		config,
+	)
 
-	return streamClient
-}
-
-type Worker[E any] struct {
-	Name string
-}
-
-func (w Worker[E]) Process(event app.Event) error {
-	fmt.Printf("read event from %v: %v, worker: %v\n", "mystream", event, w.Name)
-
-	a := rand.Intn(5)
-	if a == 0 {
-		return errors.New("rand error")
-	}
-
-	time.Sleep(100 * time.Millisecond)
-	return nil
-}
-
-func (w Worker[E]) ProcessBroken(broken map[string]interface{}) error {
-	fmt.Printf("read broken event from %v: %v, worker: %v\n", "mystream", broken, w.Name)
-
-	return nil
-}
-
-func (w Worker[E]) ProcessDead(dead app.Event) error {
-	fmt.Printf("event %v from stream %v is dead!, worker: %v\n", dead.RedisID, "mystream", w.Name)
-
-	return nil
+	return myConsumer
 }
