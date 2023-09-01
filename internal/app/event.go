@@ -1,74 +1,18 @@
 package app
 
-import (
-	"errors"
-	"strconv"
-)
-
 type Event struct {
-	RedisID string
-	Message string
-	Name    string
-	Foo     int
-	Bar     int
+	Message  string
+	Name     string
+	Foo      int
+	Bar      int
+	SubEvent SubEvent
 }
 
-type Converter[E any] struct{}
-
-func NewConverter[E any]() Converter[E] {
-	return Converter[E]{}
+type SubEvent struct {
+	BarBar string
+	FooFoo SubSubEvent
 }
 
-func (c Converter[E]) From(event Event) map[string]interface{} {
-	result := make(map[string]interface{})
-
-	result["message"] = event.Message
-	result["name"] = event.Name
-	result["foo"] = event.Foo
-	result["bar"] = event.Bar
-
-	return result
-}
-
-func (c Converter[E]) To(id string, event map[string]interface{}) (Event, error) {
-	result := Event{}
-	message, ok := event["message"].(string)
-	if !ok {
-		return result, errors.New("error convert to EventStruct, message is not exist")
-	}
-
-	name, ok := event["name"].(string)
-	if !ok {
-		return result, errors.New("error convert to EventStruct, name is not exist")
-	}
-
-	fooStr, ok := event["foo"].(string)
-	if !ok {
-		return result, errors.New("error convert to EventStruct, foo is not exist")
-	}
-	foo, err := strconv.Atoi(fooStr)
-	if err != nil {
-		return result, err
-	}
-
-	barStr, ok := event["bar"].(string)
-	if !ok {
-		return result, errors.New("error convert to EventStruct, bar is not exist")
-	}
-	bar, err := strconv.Atoi(barStr)
-	if err != nil {
-		return result, err
-	}
-
-	result.RedisID = id
-	result.Message = message
-	result.Name = name
-	result.Foo = foo
-	result.Bar = bar
-
-	return result, nil
-}
-
-func (c Converter[E]) GetRedisID(event Event) string {
-	return event.RedisID
+type SubSubEvent struct {
+	FooFooFoo int
 }

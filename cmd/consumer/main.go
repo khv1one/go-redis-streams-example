@@ -44,12 +44,7 @@ func consumerInit() goxstreams.Consumer[app.Event] {
 		FailIdle:       5000 * time.Millisecond,
 	}
 
-	myConsumer := goxstreams.NewConsumer[app.Event](
-		redisClient,
-		app.NewConverter[app.Event](),
-		app.NewWorker[app.Event]("foo"),
-		config,
-	)
+	myConsumer := goxstreams.NewConsumer[app.Event](redisClient, app.NewWorker[app.Event]("foo"), config)
 
 	return myConsumer
 }
