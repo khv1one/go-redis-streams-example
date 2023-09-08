@@ -1,4 +1,4 @@
-package app
+package jsonexample
 
 type Event struct {
 	Message  string

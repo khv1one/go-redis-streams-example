@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"go-redis-streams-example/internal/app"
+	"go-redis-streams-example/internal/jsonexample"
 
 	"github.com/khv1one/goxstreams"
 	"github.com/redis/go-redis/v9"
@@ -19,16 +19,9 @@ func main() {
 	fmt.Println("Consumer Started")
 
 	<-ctx.Done()
-	// timer1 := time.NewTimer(30 * time.Second)
-	// <-timer1.C
-	// cancel()
-	// fmt.Println("shutdown....")
-	//
-	// timer := time.NewTimer(30 * time.Second)
-	// <-timer.C
 }
 
-func consumerInit() goxstreams.Consumer[app.Event] {
+func consumerInit() goxstreams.Consumer[jsonexample.Event] {
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 
 	config := goxstreams.ConsumerConfig{
@@ -44,7 +37,12 @@ func consumerInit() goxstreams.Consumer[app.Event] {
 		FailIdle:       5000 * time.Millisecond,
 	}
 
-	myConsumer := goxstreams.NewConsumer[app.Event](redisClient, app.NewWorker[app.Event]("foo"), config)
+	myConsumer := goxstreams.NewConsumerWithConverter[jsonexample.Event](
+		redisClient,
+		jsonexample.NewWorker("foo"),
+		jsonexample.ConvertTo[*jsonexample.Event],
+		config,
+	)
 
 	return myConsumer
 }

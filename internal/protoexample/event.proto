@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "internal/protoexample";
+
+message Event {
+  string message = 1;
+  string name = 2;
+  int64 foo = 3;
+  int64 bar = 4;
+  SubEvent sub_event = 5;  
+}
+
+message SubEvent {
+  string barbar = 1;
+  SubSubEvent foofoo = 2;
+}
+
+message SubSubEvent {
+  int64 foofoofoo = 1;
+}
