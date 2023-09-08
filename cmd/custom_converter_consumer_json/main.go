@@ -29,12 +29,8 @@ func consumerInit() goxstreams.Consumer[jsonexample.Event] {
 		Group:          "mygroup",
 		ConsumerName:   "consumer",
 		BatchSize:      100,
-		MaxConcurrency: 5000,
-		NoAck:          false,
+		MaxConcurrency: 200,
 		MaxRetries:     3,
-		CleaneUp:       false,
-		FailReadTime:   1000 * time.Millisecond,
-		FailIdle:       5000 * time.Millisecond,
 	}
 
 	myConsumer := goxstreams.NewConsumerWithConverter[jsonexample.Event](

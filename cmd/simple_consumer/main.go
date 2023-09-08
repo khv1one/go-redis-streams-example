@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go-redis-streams-example/internal/jsonexample"
 
@@ -17,8 +16,6 @@ func main() {
 
 	consumerInit().Run(consumerCtx)
 	fmt.Println("Consumer Started")
-
-	<-ctx.Done()
 }
 
 func consumerInit() goxstreams.Consumer[jsonexample.Event] {
@@ -29,12 +26,8 @@ func consumerInit() goxstreams.Consumer[jsonexample.Event] {
 		Group:          "mygroup",
 		ConsumerName:   "consumer",
 		BatchSize:      100,
-		MaxConcurrency: 5000,
-		NoAck:          false,
+		MaxConcurrency: 200,
 		MaxRetries:     3,
-		CleaneUp:       false,
-		FailReadTime:   1000 * time.Millisecond,
-		FailIdle:       5000 * time.Millisecond,
 	}
 
 	myConsumer := goxstreams.NewConsumer[jsonexample.Event](
